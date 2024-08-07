@@ -1,7 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <style>
+        body {
+            font-size: 1.2em; /* Increase base font size */
+            line-height: 1.5;
+        }
+        input, button {
+            font-size: 1.2em; /* Increase font size for inputs and buttons */
+            padding: 10px; /* Increase padding for better touch target size */
+            margin: 10px 0; /* Increase margin for better spacing */
+            width: 100%; /* Make inputs take full width for easier interaction */
+            box-sizing: border-box; /* Ensure padding doesn't affect width calculation */
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        div {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
     <script>
         async function login() {
             const login = document.getElementById('login').value;
@@ -34,9 +66,10 @@
     </script>
 </head>
 <body>
-    <input type="text" id="login" placeholder="Login">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="login()">Enter</button>
+    <div>
+        <input type="text" id="login" placeholder="Login">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Enter</button>
+    </div>
 </body>
 </html>
-
