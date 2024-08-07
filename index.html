@@ -14,8 +14,22 @@
                 },
                 body: JSON.stringify({ login, password })
             });
-            const data = await response.text();
-            document.body.innerHTML = data;
+            const data = await response.json();
+            document.body.innerHTML = data.body;
+            executeScripts();
+        }
+
+        function executeScripts() {
+            const scripts = document.getElementsByTagName('script');
+            for (let i = 0; i < scripts.length; i++) {
+                if (scripts[i].text) {
+                    eval(scripts[i].text);
+                } else if (scripts[i].src) {
+                    const script = document.createElement('script');
+                    script.src = scripts[i].src;
+                    document.head.appendChild(script);
+                }
+            }
         }
     </script>
 </head>
@@ -25,3 +39,4 @@
     <button onclick="login()">Enter</button>
 </body>
 </html>
+
