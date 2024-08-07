@@ -35,9 +35,26 @@
         }
     </style>
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load login and password from local storage if they exist
+            const storedLogin = localStorage.getItem('login');
+            const storedPassword = localStorage.getItem('password');
+            if (storedLogin) {
+                document.getElementById('login').value = storedLogin;
+            }
+            if (storedPassword) {
+                document.getElementById('password').value = storedPassword;
+            }
+        });
+
         async function login() {
             const login = document.getElementById('login').value;
             const password = document.getElementById('password').value;
+
+            // Store login and password in local storage
+            localStorage.setItem('login', login);
+            localStorage.setItem('password', password);
+
             const response = await fetch('https://ja0sssddx6.execute-api.eu-north-1.amazonaws.com/default/get_interface', {
                 method: 'POST',
                 headers: {
