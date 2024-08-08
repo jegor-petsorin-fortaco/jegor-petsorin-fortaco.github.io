@@ -173,23 +173,24 @@ div, select {
     </div>
     <div id="mainContent" style="width: 100%;">
           <select id="category">
-            <option value="rotation" selected><div>Rotation</div></option>
-            <option value="education">Education</option>
+            <option value="rotation" selected><div>Ротировать</div></option>
+            <option value="education">Отправить на обучение</option>
           </select>
           <br>
-          <input type="text" id="tableId" placeholder="Table ID"><br>
-          <input type="text" id="sourceArea" placeholder="Source Area"><br>
-          <input type="text" id="targetArea" placeholder="Target Area"><br>
+          <input type="text" id="tableId" placeholder="По табельному номеру"><br>
+          <input type="text" id="nameId" placeholder="По Имени/Фамилии"><br>
+          <input type="text" id="sourceArea" placeholder="С участка"><br>
+          <input type="text" id="targetArea" placeholder="На участок"><br>
+          В диапазоне времени:<br>
           <input type="datetime-local" id="startDatetime"><br>
           <input type="datetime-local" id="endDatetime"><br>
+          <input type="number" id="positiveInteger" min="1" placeholder="На какое количество часов"><br>
 
-          <input type="number" id="positiveInteger" min="1" placeholder="Positive Integer"><br>
-
-            <button id="recordButton">Start Recording</button>            
+            <button id="recordButton">Записать причину ротации/обучения</button>            
             <audio id="audioPlayback" controls style="width: 100%"></audio>
 
-            <button id="playButton" disabled>Play</button>
-          <button id="safeButton">Safe</button>
+            <button id="playButton" disabled>Прослушать запись</button>
+          <button id="safeButton">Сохранить</button>
         
         <script>
             let mediaRecorder;
