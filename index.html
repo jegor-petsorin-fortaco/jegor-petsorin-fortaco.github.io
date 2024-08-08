@@ -3,41 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Recorder</title>
+    <title>Simple Audio Recorder with Download</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wav-encoder/1.0.3/wav-encoder.min.js"></script>
 </head>
 <body>
     <button id="startButton">Start Recording</button>
-    <button id="stopButton">Stop Recording</button>
+    <button id="stopButton" disabled>Stop Recording</button>
     <audio id="audioPlayback" controls></audio>
+    <button id="downloadButton" disabled>Download Recording</button>
 
     <script>
+        let audioContext;
         let mediaRecorder;
         let audioChunks = [];
 
-        document.getElementById('startButton').onclick = () => {
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(stream => {
-                    mediaRecorder = new MediaRecorder(stream);
-                    mediaRecorder.ondataavailable = event => {
-                        audioChunks.push(event.data);
-                    };
-                    mediaRecorder.onstop = () => {
-                        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                        const audioUrl = URL.createObjectURL(audioBlob);
-                        const audio = document.getElementById('audioPlayback');
-                        audio.src = audioUrl;
-                        audioChunks = [];
-                    };
-                    mediaRecorder.start();
-                })
-                .catch(error => console.error('getUserMedia error:', error));
-        };
+        document.getElementById('startButton').addEventListener('click', async () => {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const mediaStreamSource = audioContext.createMediaStreamSource(stream);
+                mediaRecorder = new MediaRecorder(stream);
 
-        document.getElementById('stopButton').onclick = () => {
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const arrayBuffer = await audioBlob.arrayBuffer();
+                    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                    const wavData = await encodeWAV(audioBuffer);
+
+                    const audioUrl = URL.createObjectURL(new Blob([wavData], { type: 'audio/wav' }));
+                    document.getElementById('audioPlayback').src = audioUrl;
+                    document.getElementById('downloadButton').disabled = false;
+
+                    document.getElementById('downloadButton').addEventListener('click', () => {
+                        const link = document.createElement('a');
+                        link.href = audioUrl;
+                        link.download = 'recording.wav';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    });
+
+                    audioChunks = [];
+                };
+
+                mediaRecorder.start();
+                document.getElementById('startButton').disabled = true;
+                document.getElementById('stopButton').disabled = false;
+                document.getElementById('downloadButton').disabled = true;
+            } catch (error) {
+                console.error('Error accessing audio devices:', error);
+            }
+        });
+
+        document.getElementById('stopButton').addEventListener('click', () => {
             if (mediaRecorder && mediaRecorder.state === 'recording') {
                 mediaRecorder.stop();
+                document.getElementById('startButton').disabled = false;
+                document.getElementById('stopButton').disabled = true;
             }
-        };
+        });
+
+        async function encodeWAV(audioBuffer) {
+            const numOfChannels = audioBuffer.numberOfChannels;
+            const length = audioBuffer.length * numOfChannels * 2 + 44;
+            const buffer = new ArrayBuffer(length);
+            const view = new DataView(buffer);
+
+            const writeString = (view, offset, string) => {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            };
+
+            const floatTo16BitPCM = (output, offset, input) => {
+                for (let i = 0; i < input.length; i++, offset += 2) {
+                    const s = Math.max(-1, Math.min(1, input[i]));
+                    output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+                }
+            };
+
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 32 + length, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, numOfChannels, true);
+            view.setUint32(24, audioBuffer.sampleRate, true);
+            view.setUint32(28, audioBuffer.sampleRate * numOfChannels * 2, true);
+            view.setUint16(32, numOfChannels * 2, true);
+            view.setUint16(34, 16, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, length, true);
+
+            for (let channel = 0; channel < numOfChannels; channel++) {
+                floatTo16BitPCM(view, 44, audioBuffer.getChannelData(channel));
+            }
+
+            return view.buffer;
+        }
     </script>
 </body>
 </html>
