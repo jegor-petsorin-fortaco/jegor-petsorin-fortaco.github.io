@@ -237,28 +237,41 @@
             });
 
             document.getElementById('safeButton').onclick = function() {
-                const tableId = document.getElementById('tableId').value;
-                const nameId = document.getElementById('nameId').value;
-                const sourceArea = document.getElementById('sourceArea').value;
-                const targetArea = document.getElementById('targetArea').value;
-                const startDatetime = document.getElementById('startDatetime').value;
-                const endDatetime = document.getElementById('endDatetime').value;
-                const positiveInteger = document.getElementById('positiveInteger').value;
-                const audioPlayback = document.getElementById('audioPlayback').src;
+            const tableId = document.getElementById('tableId').value;
+            const nameId = document.getElementById('nameId').value;
+            const sourceArea = document.getElementById('sourceArea').value;
+            const targetArea = document.getElementById('targetArea').value;
+            const startDatetime = document.getElementById('startDatetime').value;
+            const endDatetime = document.getElementById('endDatetime').value;
+            const positiveInteger = document.getElementById('positiveInteger').value;
+            const audioPlayback = document.getElementById('audioPlayback').src;
 
-                if (!audioPlayback) {
-                    alert('Запишите причину ротации/обучения.');
-                    return;
-                }
+            if (!audioPlayback) {
+                alert('Запишите причину ротации/обучения.');
+                return;
+            }
 
-                if ((tableId || nameId) && sourceArea && targetArea && (positiveInteger || (startDatetime && endDatetime))) {
-                    alert('Все условия выполнены. Обработка данных...');
-                    // Placeholder function call for processing data
-                } else {
-                    alert('Заполните обязательные поля.');
-                }
-            };
+            if ((tableId || nameId) && sourceArea && targetArea && (positiveInteger || (startDatetime && endDatetime))) {
+                alert('Все условия выполнены. Обработка данных...');
+                SendData();
+                document.getElementById('tableId').value = '';
+                document.getElementById('nameId').value = '';
+                document.getElementById('sourceArea').value = '';
+                document.getElementById('targetArea').value = '';
+                document.getElementById('startDatetime').value = '';
+                document.getElementById('endDatetime').value = '';
+                document.getElementById('positiveInteger').value = '';
+                document.getElementById('audioPlayback').src = '';
+                document.getElementById('playButton').disabled = true;
+            } else {
+                alert('Заполните обязательные поля.');
+            }
+        };
 
+        function SendData() {
+            // Placeholder function for sending data
+            console.log('Sending data...');
+        }
 
         </script>
     </div>
