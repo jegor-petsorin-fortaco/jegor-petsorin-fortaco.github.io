@@ -244,6 +244,12 @@
                 const startDatetime = document.getElementById('startDatetime').value;
                 const endDatetime = document.getElementById('endDatetime').value;
                 const positiveInteger = document.getElementById('positiveInteger').value;
+                const audioPlayback = document.getElementById('audioPlayback').src;
+
+                if (!audioPlayback) {
+                    alert('Запишите причину ротации/обучения.');
+                    return;
+                }
 
                 if ((tableId || nameId) && sourceArea && targetArea && (positiveInteger || (startDatetime && endDatetime))) {
                     alert('Все условия выполнены. Обработка данных...');
@@ -252,6 +258,7 @@
                     alert('Заполните обязательные поля.');
                 }
             };
+
 
         </script>
     </div>
