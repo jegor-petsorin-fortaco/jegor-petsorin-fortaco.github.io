@@ -4,19 +4,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wav-encoder/1.0.3/wav-encoder.min.js"></script>
-    <style>
-html, body {
-    overflow-x: hidden; /* Disable horizontal scrolling */
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    max-width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh; /* Ensure body takes full height of viewport */
-    box-sizing: border-box;
-}
+    <!-- <style>
+        html, body {
+            overflow-x: hidden; /* Disable horizontal scrolling */
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            max-width: 100%;
+        }
         body {
             font-size: 1.2em; /* Increase base font size */
             line-height: 1.5;
@@ -53,8 +48,85 @@ html, body {
         #mainContent {
             display: none; /* Hide main content initially */
         }
-    </style>
-    <script>
+    </style> -->
+   <style>
+       html, body {
+    overflow-x: hidden; /* Disable horizontal scrolling */
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Ensure body takes full height of viewport */
+    box-sizing: border-box;
+}
+
+body {
+    font-size: 1.2em; /* Increase base font size */
+    line-height: 1.5;
+}
+
+input, button {
+    font-size: 1.2em; /* Increase font size for inputs and buttons */
+    padding: 10px; /* Increase padding for better touch target size */
+    margin: 10px 0; /* Increase margin for better spacing */
+    width: 100%; /* Make inputs take full width for easier interaction */
+    box-sizing: border-box; /* Ensure padding doesn't affect width calculation */
+}
+
+button {  
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+button.stop-recording, button.stop-playing {
+    background-color: red;
+}
+
+div, select {
+    font-size: 1.2em;
+    width: 100%;
+    max-width: 400px; /* Restrict max width to ensure it's centered nicely */
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-sizing: border-box; /* Ensure padding doesn't affect width calculation */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#mainContent {
+    display: none; /* Hide main content initially */
+}
+
+@media (max-width: 600px) {
+    div, select {
+        padding: 10px; /* Adjust padding for smaller screens */
+        box-shadow: none; /* Remove box shadow for simpler design on mobile */
+        border: none; /* Remove border for simpler design on mobile */
+    }
+
+    input, button {
+        font-size: 1em; /* Slightly smaller font size for inputs and buttons */
+        padding: 8px; /* Slightly smaller padding */
+        margin: 5px 0; /* Adjust margin for better spacing */
+    }
+
+    body {
+        padding: 5px; /* Reduce padding on body for smaller screens */
+    }
+}
+
+   </style>
+   <script>
         document.addEventListener('DOMContentLoaded', () => {
             const storedLogin = localStorage.getItem('login');
             const storedPassword = localStorage.getItem('password');
