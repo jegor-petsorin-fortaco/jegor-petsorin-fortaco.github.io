@@ -25,6 +25,9 @@
         button:hover {
             background-color: #0056b3;
         }
+        button.stop-recording, button.stop-playing {
+            background-color: red;
+        }
         div, select {
             font-size: 1.2em;
             width: 100%;
@@ -95,33 +98,20 @@
           <input type="text" id="targetArea" placeholder="Target Area"><br>
           <input type="datetime-local" id="startDatetime"><br>
           <input type="datetime-local" id="endDatetime"><br>
-          <!-- <div id="audioPanel"> -->
-            <!-- <button id="startButton">Start Recording</button>
-            <button id="stopButton" disabled>Stop Recording</button> -->
-            <button id="recordButton">Start Recording</button>
-            <audio id="audioPlayback" controls style="height: 10%; width: 100%"></audio>
-            <!-- <button id="downloadButton" disabled>Download Recording</button> -->
-        
-          <!-- </div>  -->
+
           <input type="number" id="positiveInteger" min="1" placeholder="Positive Integer"><br>
-          <!-- <button id="recordButton">Record</button> -->
+
+            <button id="recordButton">Start Recording</button>            
+            <audio id="audioPlayback" controls style="width: 100%"></audio>
+
+            <button id="playButton" disabled>Play</button>
           <button id="safeButton">Safe</button>
         
         <script>
-            // let audioChunks = [];
-            // let mediaRecorder;
-            // let audioElement = null;
-
-            // const constraints = { audio: true };
-
-            // let audioContext; 
-
             let mediaRecorder;
             let audioChunks = [];
 
-            // ---- 
             let audioContext;
-
 
             document.getElementById('recordButton').addEventListener('click', async () => {
                 const recordButton = document.getElementById('recordButton');
@@ -144,23 +134,14 @@
 
                             const audioUrl = URL.createObjectURL(new Blob([wavData], { type: 'audio/wav' }));
                             document.getElementById('audioPlayback').src = audioUrl;
-                            document.getElementById('downloadButton').disabled = false;
-
-                            document.getElementById('downloadButton').addEventListener('click', () => {
-                                const link = document.createElement('a');
-                                link.href = audioUrl;
-                                link.download = 'recording.wav';
-                                document.body.appendChild(link);
-                                link.click();
-                                document.body.removeChild(link);
-                            });
+                            document.getElementById('playButton').disabled = false; // Enable the play button after recording
 
                             audioChunks = [];
                         };
 
                         mediaRecorder.start();
                         recordButton.textContent = 'Stop Recording';
-                        document.getElementById('downloadButton').disabled = true;
+                        recordButton.classList.add('stop-recording'); // Add red background
                     } catch (error) {
                         console.error('Error accessing audio devices:', error);
                     }
@@ -168,61 +149,10 @@
                     if (mediaRecorder && mediaRecorder.state === 'recording') {
                         mediaRecorder.stop();
                         recordButton.textContent = 'Start Recording';
+                        recordButton.classList.remove('stop-recording'); // Remove red background
                     }
                 }
             });
-
-            //---
-
-            // document.getElementById('startButton').addEventListener('click', async () => {
-            //     try {
-            //         audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            //         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            //         const mediaStreamSource = audioContext.createMediaStreamSource(stream);
-            //         mediaRecorder = new MediaRecorder(stream);
-
-            //         mediaRecorder.ondataavailable = event => {
-            //             audioChunks.push(event.data);
-            //         };
-
-            //         mediaRecorder.onstop = async () => {
-            //             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            //             const arrayBuffer = await audioBlob.arrayBuffer();
-            //             const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-            //             const wavData = await encodeWAV(audioBuffer);
-
-            //             const audioUrl = URL.createObjectURL(new Blob([wavData], { type: 'audio/wav' }));
-            //             document.getElementById('audioPlayback').src = audioUrl;
-            //             document.getElementById('downloadButton').disabled = false;
-
-            //             document.getElementById('downloadButton').addEventListener('click', () => {
-            //                 const link = document.createElement('a');
-            //                 link.href = audioUrl;
-            //                 link.download = 'recording.wav';
-            //                 document.body.appendChild(link);
-            //                 link.click();
-            //                 document.body.removeChild(link);
-            //             });
-
-            //             audioChunks = [];
-            //         };
-
-            //         mediaRecorder.start();
-            //         document.getElementById('startButton').disabled = true;
-            //         document.getElementById('stopButton').disabled = false;
-            //         document.getElementById('downloadButton').disabled = true;
-            //     } catch (error) {
-            //         console.error('Error accessing audio devices:', error);
-            //     }
-            // });
-
-            // document.getElementById('stopButton').addEventListener('click', () => {
-            //     if (mediaRecorder && mediaRecorder.state === 'recording') {
-            //         mediaRecorder.stop();
-            //         document.getElementById('startButton').disabled = false;
-            //         document.getElementById('stopButton').disabled = true;
-            //     }
-            // });
 
             async function encodeWAV(audioBuffer) {
                 const numOfChannels = audioBuffer.numberOfChannels;
@@ -264,7 +194,20 @@
                 return view.buffer;
             }
 
-
+            document.getElementById('playButton').addEventListener('click', () => {
+                const playButton = document.getElementById('playButton');
+                const audioPlayback = document.getElementById('audioPlayback');
+                if (playButton.textContent === 'Play') {
+                    audioPlayback.play();
+                    playButton.textContent = 'Stop Playing';
+                    playButton.classList.add('stop-playing'); // Add red background
+                } else {
+                    audioPlayback.pause();
+                    audioPlayback.currentTime = 0;
+                    playButton.textContent = 'Play';
+                    playButton.classList.remove('stop-playing'); // Remove red background
+                }
+            });
 
             document.addEventListener('DOMContentLoaded', () => {
                 // Load login and password from local storage if they exist
@@ -277,7 +220,6 @@
                     document.getElementById('password').value = storedPassword;
                 }
             });
-
 
             document.getElementById('safeButton').onclick = function() {
                 console.log('Safe button clicked');
