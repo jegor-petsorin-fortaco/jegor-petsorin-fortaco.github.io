@@ -1,16 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Вход</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wav-encoder/1.0.3/wav-encoder.min.js"></script>
-    <!-- <style>
+    <style>
         html, body {
             overflow-x: hidden; /* Disable horizontal scrolling */
             margin: 0;
             padding: 0;
             width: 100%;
             max-width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Ensure body takes full height of viewport */
+            box-sizing: border-box;
         }
         body {
             font-size: 1.2em; /* Increase base font size */
@@ -38,95 +43,34 @@
         div, select {
             font-size: 1.2em;
             width: 100%;
-            max-width: 400px;
+            max-width: 400px; /* Restrict max width to ensure it's centered nicely */
             margin: auto;
             padding: 20px;
             border: 1px solid #ccc;
             border-radius: 10px;
+            box-sizing: border-box; /* Ensure padding doesn't affect width calculation */
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
         #mainContent {
             display: none; /* Hide main content initially */
         }
-    </style> -->
-   <style>
-       html, body {
-    overflow-x: hidden; /* Disable horizontal scrolling */
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    max-width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh; /* Ensure body takes full height of viewport */
-    box-sizing: border-box;
-}
-
-body {
-    font-size: 1.2em; /* Increase base font size */
-    line-height: 1.5;
-}
-
-input, button {
-    font-size: 1.2em; /* Increase font size for inputs and buttons */
-    padding: 10px; /* Increase padding for better touch target size */
-    margin: 10px 0; /* Increase margin for better spacing */
-    width: 100%; /* Make inputs take full width for easier interaction */
-    box-sizing: border-box; /* Ensure padding doesn't affect width calculation */
-}
-
-button {  
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #0056b3;
-}
-
-button.stop-recording, button.stop-playing {
-    background-color: red;
-}
-
-div, select {
-    font-size: 1.2em;
-    width: 100%;
-    max-width: 400px; /* Restrict max width to ensure it's centered nicely */
-    margin: auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    box-sizing: border-box; /* Ensure padding doesn't affect width calculation */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-#mainContent {
-    display: none; /* Hide main content initially */
-}
-
-@media (max-width: 600px) {
-    div, select {
-        padding: 10px; /* Adjust padding for smaller screens */
-        box-shadow: none; /* Remove box shadow for simpler design on mobile */
-        border: none; /* Remove border for simpler design on mobile */
-    }
-
-    input, button {
-        font-size: 1em; /* Slightly smaller font size for inputs and buttons */
-        padding: 8px; /* Slightly smaller padding */
-        margin: 5px 0; /* Adjust margin for better spacing */
-    }
-
-    body {
-        padding: 5px; /* Reduce padding on body for smaller screens */
-    }
-}
-
-   </style>
-   <script>
+        @media (max-width: 600px) {
+            div, select {
+                padding: 10px; /* Adjust padding for smaller screens */
+                box-shadow: none; /* Remove box shadow for simpler design on mobile */
+                border: none; /* Remove border for simpler design on mobile */
+            }
+            input, button {
+                font-size: 1em; /* Slightly smaller font size for inputs and buttons */
+                padding: 8px; /* Slightly smaller padding */
+                margin: 5px 0; /* Adjust margin for better spacing */
+            }
+            body {
+                padding: 5px; /* Reduce padding on body for smaller screens */
+            }
+        }
+    </style>
+    <script>
         document.addEventListener('DOMContentLoaded', () => {
             const storedLogin = localStorage.getItem('login');
             const storedPassword = localStorage.getItem('password');
@@ -158,7 +102,6 @@ div, select {
                 document.getElementById('loginForm').style.display = 'none';
                 document.getElementById('mainContent').style.display = 'block';
             } else {
-                // alert('Login failed. Please check your credentials.');
                 document.getElementById('loginForm').style.display = 'none';
                 document.getElementById('mainContent').style.display = 'block';
             }
@@ -167,30 +110,29 @@ div, select {
 </head>
 <body>
     <div id="loginForm">
-        <input type="text" id="login" placeholder="Login">
-        <input type="password" id="password" placeholder="Password">
-        <button onclick="login()">Enter</button>
+        <input type="text" id="login" placeholder="Логин">
+        <input type="password" id="password" placeholder="Пароль">
+        <button onclick="login()">Войти</button>
     </div>
     <div id="mainContent" style="width: 100%;">
-          <select id="category">
-            <option value="rotation" selected><div>Ротировать</div></option>
+        <select id="category">
+            <option value="rotation" selected>Ротировать</option>
             <option value="education">Отправить на обучение</option>
-          </select>
-          <br>
-          <input type="text" id="tableId" placeholder="По табельному номеру"><br>
-          <input type="text" id="nameId" placeholder="По Имени/Фамилии"><br>
-          <input type="text" id="sourceArea" placeholder="С участка"><br>
-          <input type="text" id="targetArea" placeholder="На участок"><br>
-          В диапазоне времени:<br>
-          <input type="datetime-local" id="startDatetime"><br>
-          <input type="datetime-local" id="endDatetime"><br>
-          <input type="number" id="positiveInteger" min="1" placeholder="На какое количество часов"><br>
+        </select>
+        <br>
+        <input type="text" id="tableId" placeholder="По табельному номеру"><br>
+        <input type="text" id="nameId" placeholder="По Имени/Фамилии"><br>
+        <input type="text" id="sourceArea" placeholder="С участка"><br>
+        <input type="text" id="targetArea" placeholder="На участок"><br>
+        В диапазоне времени:<br>
+        <input type="datetime-local" id="startDatetime"><br>
+        <input type="datetime-local" id="endDatetime"><br>
+        <input type="number" id="positiveInteger" min="1" placeholder="На какое количество часов"><br>
 
-            <button id="recordButton">Записать причину ротации/обучения</button>            
-            <audio id="audioPlayback" controls style="width: 100%"></audio>
-
-            <button id="playButton" disabled>Прослушать запись</button>
-          <button id="safeButton">Сохранить</button>
+        <button id="recordButton">Записать причину ротации/обучения</button>            
+        <audio id="audioPlayback" controls style="width: 100%"></audio>
+        <button id="playButton" disabled>Прослушать запись</button>
+        <button id="safeButton">Сохранить</button>
         
         <script>
             let mediaRecorder;
@@ -200,7 +142,7 @@ div, select {
 
             document.getElementById('recordButton').addEventListener('click', async () => {
                 const recordButton = document.getElementById('recordButton');
-                if (recordButton.textContent === 'Start Recording') {
+                if (recordButton.textContent === 'Записать причину ротации/обучения') {
                     try {
                         audioContext = new (window.AudioContext || window.webkitAudioContext)();
                         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -225,15 +167,15 @@ div, select {
                         };
 
                         mediaRecorder.start();
-                        recordButton.textContent = 'Stop Recording';
+                        recordButton.textContent = 'Остановить запись';
                         recordButton.classList.add('stop-recording'); // Add red background
                     } catch (error) {
-                        console.error('Error accessing audio devices:', error);
+                        console.error('Ошибка доступа к аудиоустройствам:', error);
                     }
-                } else if (recordButton.textContent === 'Stop Recording') {
+                } else if (recordButton.textContent === 'Остановить запись') {
                     if (mediaRecorder && mediaRecorder.state === 'recording') {
                         mediaRecorder.stop();
-                        recordButton.textContent = 'Start Recording';
+                        recordButton.textContent = 'Записать причину ротации/обучения';
                         recordButton.classList.remove('stop-recording'); // Remove red background
                     }
                 }
@@ -282,32 +224,20 @@ div, select {
             document.getElementById('playButton').addEventListener('click', () => {
                 const playButton = document.getElementById('playButton');
                 const audioPlayback = document.getElementById('audioPlayback');
-                if (playButton.textContent === 'Play') {
+                if (playButton.textContent === 'Прослушать запись') {
                     audioPlayback.play();
-                    playButton.textContent = 'Stop Playing';
+                    playButton.textContent = 'Остановить воспроизведение';
                     playButton.classList.add('stop-playing'); // Add red background
                 } else {
                     audioPlayback.pause();
                     audioPlayback.currentTime = 0;
-                    playButton.textContent = 'Play';
+                    playButton.textContent = 'Прослушать запись';
                     playButton.classList.remove('stop-playing'); // Remove red background
                 }
             });
 
-            document.addEventListener('DOMContentLoaded', () => {
-                // Load login and password from local storage if they exist
-                const storedLogin = localStorage.getItem('login');
-                const storedPassword = localStorage.getItem('password');
-                if (storedLogin) {
-                    document.getElementById('login').value = storedLogin;
-                }
-                if (storedPassword) {
-                    document.getElementById('password').value = storedPassword;
-                }
-            });
-
             document.getElementById('safeButton').onclick = function() {
-                console.log('Safe button clicked');
+                console.log('Кнопка сохранить нажата');
                 // Placeholder function call
             };
         </script>
