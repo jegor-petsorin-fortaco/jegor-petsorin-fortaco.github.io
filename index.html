@@ -1,11 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/wav-encoder/1.0.3/wav-encoder.min.js"></script>
-    <meta charset="UTF-8"> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wav-encoder/1.0.3/wav-encoder.min.js"></script>
     <style>
         body {
             font-size: 1.2em; /* Increase base font size */
@@ -27,7 +25,9 @@
         button:hover {
             background-color: #0056b3;
         }
-        div {
+        div, select {
+            font-size: 1.2em;
+            width: 100%;
             max-width: 400px;
             margin: auto;
             padding: 20px;
@@ -35,10 +35,12 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+        #mainContent {
+            display: none; /* Hide main content initially */
+        }
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Load login and password from local storage if they exist
             const storedLogin = localStorage.getItem('login');
             const storedPassword = localStorage.getItem('password');
             if (storedLogin) {
@@ -53,7 +55,6 @@
             const login = document.getElementById('login').value;
             const password = document.getElementById('password').value;
 
-            // Store login and password in local storage
             localStorage.setItem('login', login);
             localStorage.setItem('password', password);
 
@@ -66,29 +67,223 @@
                 body: JSON.stringify({ login, password })
             });
             const data = await response.json();
-            document.body.innerHTML = data.body;
-            executeScripts();
-        }
-
-        function executeScripts() {
-            const scripts = document.getElementsByTagName('script');
-            for (let i = 0; i < scripts.length; i++) {
-                if (scripts[i].text) {
-                    eval(scripts[i].text);
-                } else if (scripts[i].src) {
-                    const script = document.createElement('script');
-                    script.src = scripts[i].src;
-                    document.head.appendChild(script);
-                }
+            if (data.body && data.status === 'OK') {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+            } else {
+                // alert('Login failed. Please check your credentials.');
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
             }
         }
     </script>
 </head>
 <body>
-    <div>
+    <div id="loginForm">
         <input type="text" id="login" placeholder="Login">
         <input type="password" id="password" placeholder="Password">
         <button onclick="login()">Enter</button>
     </div>
+    <div id="mainContent">
+          <select id="category">
+            <option value="rotation" selected><div>Rotation</div></option>
+            <option value="education">Education</option>
+          </select>
+          <br>
+          <input type="text" id="tableId" placeholder="Table ID"><br>
+          <input type="text" id="sourceArea" placeholder="Source Area"><br>
+          <input type="text" id="targetArea" placeholder="Target Area"><br>
+          <input type="datetime-local" id="startDatetime"><br>
+          <input type="datetime-local" id="endDatetime"><br>
+          <!-- <div id="audioPanel"> -->
+            <!-- <button id="startButton">Start Recording</button>
+            <button id="stopButton" disabled>Stop Recording</button> -->
+            <button id="recordButton">Start Recording</button>
+            <audio id="audioPlayback" controls></audio>
+            <!-- <button id="downloadButton" disabled>Download Recording</button> -->
+        
+          <!-- </div>  -->
+          <input type="number" id="positiveInteger" min="1" placeholder="Positive Integer"><br>
+          <!-- <button id="recordButton">Record</button> -->
+          <button id="safeButton">Safe</button>
+        
+        <script>
+            // let audioChunks = [];
+            // let mediaRecorder;
+            // let audioElement = null;
+
+            // const constraints = { audio: true };
+
+            // let audioContext; 
+
+            let mediaRecorder;
+            let audioChunks = [];
+
+            // ---- 
+            let audioContext;
+
+
+            document.getElementById('recordButton').addEventListener('click', async () => {
+                const recordButton = document.getElementById('recordButton');
+                if (recordButton.textContent === 'Start Recording') {
+                    try {
+                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        const mediaStreamSource = audioContext.createMediaStreamSource(stream);
+                        mediaRecorder = new MediaRecorder(stream);
+
+                        mediaRecorder.ondataavailable = event => {
+                            audioChunks.push(event.data);
+                        };
+
+                        mediaRecorder.onstop = async () => {
+                            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                            const arrayBuffer = await audioBlob.arrayBuffer();
+                            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                            const wavData = await encodeWAV(audioBuffer);
+
+                            const audioUrl = URL.createObjectURL(new Blob([wavData], { type: 'audio/wav' }));
+                            document.getElementById('audioPlayback').src = audioUrl;
+                            document.getElementById('downloadButton').disabled = false;
+
+                            document.getElementById('downloadButton').addEventListener('click', () => {
+                                const link = document.createElement('a');
+                                link.href = audioUrl;
+                                link.download = 'recording.wav';
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                            });
+
+                            audioChunks = [];
+                        };
+
+                        mediaRecorder.start();
+                        recordButton.textContent = 'Stop Recording';
+                        document.getElementById('downloadButton').disabled = true;
+                    } catch (error) {
+                        console.error('Error accessing audio devices:', error);
+                    }
+                } else if (recordButton.textContent === 'Stop Recording') {
+                    if (mediaRecorder && mediaRecorder.state === 'recording') {
+                        mediaRecorder.stop();
+                        recordButton.textContent = 'Start Recording';
+                    }
+                }
+            });
+
+            //---
+
+            // document.getElementById('startButton').addEventListener('click', async () => {
+            //     try {
+            //         audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            //         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            //         const mediaStreamSource = audioContext.createMediaStreamSource(stream);
+            //         mediaRecorder = new MediaRecorder(stream);
+
+            //         mediaRecorder.ondataavailable = event => {
+            //             audioChunks.push(event.data);
+            //         };
+
+            //         mediaRecorder.onstop = async () => {
+            //             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            //             const arrayBuffer = await audioBlob.arrayBuffer();
+            //             const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            //             const wavData = await encodeWAV(audioBuffer);
+
+            //             const audioUrl = URL.createObjectURL(new Blob([wavData], { type: 'audio/wav' }));
+            //             document.getElementById('audioPlayback').src = audioUrl;
+            //             document.getElementById('downloadButton').disabled = false;
+
+            //             document.getElementById('downloadButton').addEventListener('click', () => {
+            //                 const link = document.createElement('a');
+            //                 link.href = audioUrl;
+            //                 link.download = 'recording.wav';
+            //                 document.body.appendChild(link);
+            //                 link.click();
+            //                 document.body.removeChild(link);
+            //             });
+
+            //             audioChunks = [];
+            //         };
+
+            //         mediaRecorder.start();
+            //         document.getElementById('startButton').disabled = true;
+            //         document.getElementById('stopButton').disabled = false;
+            //         document.getElementById('downloadButton').disabled = true;
+            //     } catch (error) {
+            //         console.error('Error accessing audio devices:', error);
+            //     }
+            // });
+
+            // document.getElementById('stopButton').addEventListener('click', () => {
+            //     if (mediaRecorder && mediaRecorder.state === 'recording') {
+            //         mediaRecorder.stop();
+            //         document.getElementById('startButton').disabled = false;
+            //         document.getElementById('stopButton').disabled = true;
+            //     }
+            // });
+
+            async function encodeWAV(audioBuffer) {
+                const numOfChannels = audioBuffer.numberOfChannels;
+                const length = audioBuffer.length * numOfChannels * 2 + 44;
+                const buffer = new ArrayBuffer(length);
+                const view = new DataView(buffer);
+
+                const writeString = (view, offset, string) => {
+                    for (let i = 0; i < string.length; i++) {
+                        view.setUint8(offset + i, string.charCodeAt(i));
+                    }
+                };
+
+                const floatTo16BitPCM = (output, offset, input) => {
+                    for (let i = 0; i < input.length; i++, offset += 2) {
+                        const s = Math.max(-1, Math.min(1, input[i]));
+                        output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+                    }
+                };
+
+                writeString(view, 0, 'RIFF');
+                view.setUint32(4, 32 + length, true);
+                writeString(view, 8, 'WAVE');
+                writeString(view, 12, 'fmt ');
+                view.setUint32(16, 16, true);
+                view.setUint16(20, 1, true);
+                view.setUint16(22, numOfChannels, true);
+                view.setUint32(24, audioBuffer.sampleRate, true);
+                view.setUint32(28, audioBuffer.sampleRate * numOfChannels * 2, true);
+                view.setUint16(32, numOfChannels * 2, true);
+                view.setUint16(34, 16, true);
+                writeString(view, 36, 'data');
+                view.setUint32(40, length, true);
+
+                for (let channel = 0; channel < numOfChannels; channel++) {
+                    floatTo16BitPCM(view, 44, audioBuffer.getChannelData(channel));
+                }
+
+                return view.buffer;
+            }
+
+
+
+            document.addEventListener('DOMContentLoaded', () => {
+                // Load login and password from local storage if they exist
+                const storedLogin = localStorage.getItem('login');
+                const storedPassword = localStorage.getItem('password');
+                if (storedLogin) {
+                    document.getElementById('login').value = storedLogin;
+                }
+                if (storedPassword) {
+                    document.getElementById('password').value = storedPassword;
+                }
+            });
+
+
+            document.getElementById('safeButton').onclick = function() {
+                console.log('Safe button clicked');
+                // Placeholder function call
+            };
+        </script>
+    </div>
 </body>
-</html>  
+</html>

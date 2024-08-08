@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/wav-encoder/1.0.3/wav-encoder.min.js"></script>
+    <meta charset="UTF-8"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            font-size: 1.2em; /* Increase base font size */
+            line-height: 1.5;
+        }
+        input, button {
+            font-size: 1.2em; /* Increase font size for inputs and buttons */
+            padding: 10px; /* Increase padding for better touch target size */
+            margin: 10px 0; /* Increase margin for better spacing */
+            width: 100%; /* Make inputs take full width for easier interaction */
+            box-sizing: border-box; /* Ensure padding doesn't affect width calculation */
+        }
+        button {  
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        div {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load login and password from local storage if they exist
+            const storedLogin = localStorage.getItem('login');
+            const storedPassword = localStorage.getItem('password');
+            if (storedLogin) {
+                document.getElementById('login').value = storedLogin;
+            }
+            if (storedPassword) {
+                document.getElementById('password').value = storedPassword;
+            }
+        });
+
+        async function login() {
+            const login = document.getElementById('login').value;
+            const password = document.getElementById('password').value;
+
+            // Store login and password in local storage
+            localStorage.setItem('login', login);
+            localStorage.setItem('password', password);
+
+            const response = await fetch('https://ja0sssddx6.execute-api.eu-north-1.amazonaws.com/default/get_interface', {
+               method: 'POST',
+               headers: {
+                    'X-Api-Key': '30AfHDCvzb2HngQL9Ov3P65g7mMP7FYc3i3xivSE',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ login, password })
+            });
+            const data = await response.json();
+            document.body.innerHTML = data.body;
+            executeScripts();
+        }
+
+        function executeScripts() {
+            const scripts = document.getElementsByTagName('script');
+            for (let i = 0; i < scripts.length; i++) {
+                if (scripts[i].text) {
+                    eval(scripts[i].text);
+                } else if (scripts[i].src) {
+                    const script = document.createElement('script');
+                    script.src = scripts[i].src;
+                    document.head.appendChild(script);
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div>
+        <input type="text" id="login" placeholder="Login">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Enter</button>
+    </div>
+</body>
+</html>  
