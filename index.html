@@ -72,6 +72,8 @@
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('mainContent').style.display = 'block';
+            
             const storedLogin = localStorage.getItem('login');
             const storedPassword = localStorage.getItem('password');
             if (storedLogin && storedLogin != "") {
