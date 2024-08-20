@@ -277,6 +277,7 @@ document.getElementById('safeButton').addEventListener('click', () => {
 
     if ((tableId || nameId) && sourceArea && targetArea && (positiveInteger || (startDatetime && endDatetime))) {
         if (window.wavData) {
+            document.getElementById('mainContent').style.display = 'none';
 
             // // Show progress bar
             // const progressBar = document.createElement('div');
@@ -341,7 +342,6 @@ document.getElementById('safeButton').addEventListener('click', () => {
                 document.getElementById('audioPlayback').src = '';
                 document.getElementById('playButton').disabled = true;
 
-                document.getElementById('mainContent').style.display = 'block';
                 location.reload();
             });
 
