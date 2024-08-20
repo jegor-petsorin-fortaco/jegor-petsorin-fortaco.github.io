@@ -331,7 +331,8 @@ document.getElementById('safeButton').addEventListener('click', () => {
             // Show the "Готово" button and hide the progress bar
 
             // clearInterval(progressInterval);
-            progressBar.style.width = '100%';
+            // progressBar.style.width = '100%';
+
             document.getElementById('doneButton').style.display = 'block';
 
             // Add event listener to "Готово" button to clear fields and refresh the page
@@ -347,7 +348,6 @@ document.getElementById('safeButton').addEventListener('click', () => {
                 document.getElementById('playButton').disabled = true;
 
                 location.reload();
-                document.getElementById('mainContent').style.display = 'block';
             });
 
         } else {
