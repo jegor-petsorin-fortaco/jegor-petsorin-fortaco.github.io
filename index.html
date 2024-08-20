@@ -278,25 +278,25 @@ document.getElementById('safeButton').addEventListener('click', () => {
     if ((tableId || nameId) && sourceArea && targetArea && (positiveInteger || (startDatetime && endDatetime))) {
         if (window.wavData) {
 
-            // Show progress bar
-            const progressBar = document.createElement('div');
-            progressBar.style.position = 'fixed';
-            progressBar.style.top = '0';
-            progressBar.style.left = '0';
-            progressBar.style.width = '0';
-            progressBar.style.height = '5px';
-            progressBar.style.backgroundColor = '#007BFF';
-            document.body.appendChild(progressBar);
+            // // Show progress bar
+            // const progressBar = document.createElement('div');
+            // progressBar.style.position = 'fixed';
+            // progressBar.style.top = '0';
+            // progressBar.style.left = '0';
+            // progressBar.style.width = '0';
+            // progressBar.style.height = '5px';
+            // progressBar.style.backgroundColor = '#007BFF';
+            // document.body.appendChild(progressBar);
 
-            let progress = 0;
-            const progressInterval = setInterval(() => {
-                progress += 10;
-                progressBar.style.width = progress + '%';
-                if (progress >= 100) {
-                    clearInterval(progressInterval);
-                    progressBar.style.width = '100%';
-                }
-            }, 100); // Update every 100ms
+            // let progress = 0;
+            // const progressInterval = setInterval(() => {
+            //     progress += 10;
+            //     progressBar.style.width = progress + '%';
+            //     if (progress >= 100) {
+            //         clearInterval(progressInterval);
+            //         progressBar.style.width = '100%';
+            //     }
+            // }, 100); // Update every 100ms
 
             const blob = new Blob([window.wavData], { type: 'audio/wav' });
             
