@@ -119,6 +119,7 @@
         <audio id="audioPlayback" controls style="width: 100%"></audio>
         <button id="playButton" disabled>Прослушать запись</button>
         <button id="safeButton">Сохранить</button>
+        <button id="doneButton" style="display:none;">Готово</button>
         
         <script>
             let mediaRecorder;
@@ -309,10 +310,29 @@ document.getElementById('safeButton').addEventListener('click', () => {
             downloadLink.href = URL.createObjectURL(blob);
             downloadLink.download = filename;
             downloadLink.click();
-            console.log(`Запись успешно сохранена как ${filename}`);
 
-            // Refresh the page and clear fields after download
-            setTimeout(() => {
+            // // Refresh the page and clear fields after download
+            // setTimeout(() => {
+            //     document.getElementById('tableId').value = '';
+            //     document.getElementById('nameId').value = '';
+            //     document.getElementById('sourceArea').value = '';
+            //     document.getElementById('targetArea').value = '';
+            //     document.getElementById('startDatetime').value = '';
+            //     document.getElementById('endDatetime').value = '';
+            //     document.getElementById('positiveInteger').value = '';
+            //     document.getElementById('audioPlayback').src = '';
+            //     document.getElementById('playButton').disabled = true;
+                
+            //     location.reload();
+            // }, 1500); // Wait 1.5 seconds to ensure the download starts before refreshing
+            // Show the "Готово" button and hide the progress bar
+            
+            clearInterval(progressInterval);
+            progressBar.style.width = '100%';
+            document.getElementById('doneButton').style.display = 'inline-block';
+
+            // Add event listener to "Готово" button to clear fields and refresh the page
+            document.getElementById('doneButton').addEventListener('click', () => {
                 document.getElementById('tableId').value = '';
                 document.getElementById('nameId').value = '';
                 document.getElementById('sourceArea').value = '';
@@ -322,9 +342,10 @@ document.getElementById('safeButton').addEventListener('click', () => {
                 document.getElementById('positiveInteger').value = '';
                 document.getElementById('audioPlayback').src = '';
                 document.getElementById('playButton').disabled = true;
-                
+
                 location.reload();
-            }, 1500); // Wait 1.5 seconds to ensure the download starts before refreshing
+            });
+
         } else {
 
             document.getElementById('mainContent').style.display = 'block';
