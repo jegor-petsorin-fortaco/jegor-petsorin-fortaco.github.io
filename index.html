@@ -233,56 +233,105 @@
                 }
             });
 
-// document.getElementById('safeButton').addEventListener('click', async () => {
-//     const uploadButton = document.getElementById('safeButton');
-
-//     if (window.wavData) {
-//         try {
-//             const blob = new Blob([window.wavData], { type: 'audio/wav' });
-
-//             const response = await fetch('https://ja0sssddx6.execute-api.eu-north-1.amazonaws.com/default/upload', {
-//                 method: 'POST',
-//                 headers: {
-//                     'Content-Type': 'audio/wav',
-//                     'x-api-key': '30AfHDCvzb2HngQL9Ov3P65g7mMP7FYc3i3xivSE'
-//                 },
-//                 body: blob
-//             });
-
-//             if (response.ok) {
-//                 const responseText = await response.text();
-//                 console.log('Запись успешно отправлена!');
-//                 console.log('Response:', responseText);
-//                 // Handle success response
-//             } else {
-//                 console.error('Ошибка при отправке записи:', response.statusText);
-//                 // Handle error response
-//             }
-//         } catch (error) {
-//             console.error('Ошибка при отправке записи:', error);
-//         } finally {
-//             uploadButton.disabled = false; // Re-enable the button
-//         }
+// document.getElementById('safeButton').addEventListener('click', () => {
+//     if ((tableId || nameId) && sourceArea && targetArea && (positiveInteger || (startDatetime && endDatetime))) {
 //     } else {
-//         console.error('Нет данных для отправки.');
+//         alert('Заполните обязательные поля.');
+//         return;
+//     }
+//     if (window.wavData) {
+//         const blob = new Blob([window.wavData], { type: 'audio/wav' });
+//         const downloadLink = document.createElement('a');
+//         downloadLink.href = URL.createObjectURL(blob);
+//         downloadLink.download = 'audio.wav';
+//         downloadLink.click();
+//         console.log('Запись успешно сохранена в формате .wav');
+
+//         // Refresh the page to ensure the microphone is turned off
+//         setTimeout(() => {
+//             document.getElementById('tableId').value = '';
+//             document.getElementById('nameId').value = '';
+//             document.getElementById('sourceArea').value = '';
+//             document.getElementById('targetArea').value = '';
+//             document.getElementById('startDatetime').value = '';
+//             document.getElementById('endDatetime').value = '';
+//             document.getElementById('positiveInteger').value = '';
+//             document.getElementById('audioPlayback').src = '';
+//             document.getElementById('playButton').disabled = true;
+//             location.reload();
+//         }, 1000); // Wait 1 second to ensure the download starts before refreshing
+//     } else {
+//         console.error('Пожалуйста, запишите аудио еще раз');
 //     }
 // });
 
 document.getElementById('safeButton').addEventListener('click', () => {
-    if (window.wavData) {
-        const blob = new Blob([window.wavData], { type: 'audio/wav' });
-        const downloadLink = document.createElement('a');
-        downloadLink.href = URL.createObjectURL(blob);
-        downloadLink.download = 'audio.wav';
-        downloadLink.click();
-        console.log('Запись успешно сохранена как audio.wav');
+    const tableId = document.getElementById('tableId').value;
+    const nameId = document.getElementById('nameId').value;
+    const sourceArea = document.getElementById('sourceArea').value;
+    const targetArea = document.getElementById('targetArea').value;
+    const startDatetime = document.getElementById('startDatetime').value;
+    const endDatetime = document.getElementById('endDatetime').value;
+    const positiveInteger = document.getElementById('positiveInteger').value;
 
-        // Refresh the page to ensure the microphone is turned off
-        setTimeout(() => {
-            location.reload();
-        }, 1000); // Wait 1 second to ensure the download starts before refreshing
+    if ((tableId || nameId) && sourceArea && targetArea && (positiveInteger || (startDatetime && endDatetime))) {
+        if (window.wavData) {
+
+            document.getElementById('mainContent').style.display = 'none';
+
+            // Show progress bar
+            const progressBar = document.createElement('div');
+            progressBar.style.position = 'fixed';
+            progressBar.style.top = '0';
+            progressBar.style.left = '0';
+            progressBar.style.width = '0';
+            progressBar.style.height = '5px';
+            progressBar.style.backgroundColor = '#007BFF';
+            document.body.appendChild(progressBar);
+
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 10;
+                progressBar.style.width = progress + '%';
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    progressBar.style.width = '100%';
+                }
+            }, 100); // Update every 100ms
+
+            const blob = new Blob([window.wavData], { type: 'audio/wav' });
+            
+            // Generate filename with format 'hh:mm_dd/mm/yy_timeInMillisecs.wav'
+            const now = new Date();
+            const filename = `${now.getHours()}:${now.getMinutes()}_${now.getDate()}.${now.getMonth()+1}.${now.getFullYear()}_${now.getTime()}.wav`;
+
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = filename;
+            downloadLink.click();
+            console.log(`Запись успешно сохранена как ${filename}`);
+
+            // Refresh the page and clear fields after download
+            setTimeout(() => {
+                document.getElementById('tableId').value = '';
+                document.getElementById('nameId').value = '';
+                document.getElementById('sourceArea').value = '';
+                document.getElementById('targetArea').value = '';
+                document.getElementById('startDatetime').value = '';
+                document.getElementById('endDatetime').value = '';
+                document.getElementById('positiveInteger').value = '';
+                document.getElementById('audioPlayback').src = '';
+                document.getElementById('playButton').disabled = true;
+                
+                location.reload();
+            }, 1500); // Wait 1.5 seconds to ensure the download starts before refreshing
+        } else {
+
+            document.getElementById('mainContent').style.display = 'block';
+            alert('Пожалуйста, запишите аудио.');
+        }
     } else {
-        console.error('Нет данных для сохранения.');
+        alert('Заполните обязательные поля.');
     }
 });
 
