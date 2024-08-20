@@ -74,10 +74,10 @@
         document.addEventListener('DOMContentLoaded', () => {
             const storedLogin = localStorage.getItem('login');
             const storedPassword = localStorage.getItem('password');
-            if (storedLogin) {
+            if (storedLogin && storedLogin != "") {
                 document.getElementById('login').value = storedLogin;
             }
-            if (storedPassword) {
+            if (storedPassword && storedPassword != "") {
                 document.getElementById('password').value = storedPassword;
             }
         });
@@ -86,6 +86,9 @@
             // TODO: login
             const login = document.getElementById('login').value;
             const password = document.getElementById('password').value;
+
+            localStorage.setItem('login', login);
+            localStorage.setItem('password', password);
 
             // Simulated a successful login response
             const data = { statusCode: 200, message: "Login successful" };
@@ -328,7 +331,7 @@ document.getElementById('safeButton').addEventListener('click', () => {
 
             clearInterval(progressInterval);
             progressBar.style.width = '100%';
-            document.getElementById('doneButton').style.display = 'inline-block';
+            document.getElementById('doneButton').style.display = 'block';
 
             // Add event listener to "Готово" button to clear fields and refresh the page
             document.getElementById('doneButton').addEventListener('click', () => {
