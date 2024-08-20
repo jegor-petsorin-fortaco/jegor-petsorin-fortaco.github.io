@@ -278,8 +278,6 @@ document.getElementById('safeButton').addEventListener('click', () => {
     if ((tableId || nameId) && sourceArea && targetArea && (positiveInteger || (startDatetime && endDatetime))) {
         if (window.wavData) {
 
-            document.getElementById('mainContent').style.display = 'none';
-
             // Show progress bar
             const progressBar = document.createElement('div');
             progressBar.style.position = 'fixed';
@@ -326,7 +324,7 @@ document.getElementById('safeButton').addEventListener('click', () => {
             //     location.reload();
             // }, 1500); // Wait 1.5 seconds to ensure the download starts before refreshing
             // Show the "Готово" button and hide the progress bar
-            
+
             clearInterval(progressInterval);
             progressBar.style.width = '100%';
             document.getElementById('doneButton').style.display = 'inline-block';
@@ -343,6 +341,7 @@ document.getElementById('safeButton').addEventListener('click', () => {
                 document.getElementById('audioPlayback').src = '';
                 document.getElementById('playButton').disabled = true;
 
+                document.getElementById('mainContent').style.display = 'block';
                 location.reload();
             });
 
