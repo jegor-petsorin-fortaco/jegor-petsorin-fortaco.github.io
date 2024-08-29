@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wav-encoder/1.0.3/wav-encoder.min.js"></script>
+    <style>
+        html, body {
+            overflow-x: hidden; /* Disable horizontal scrolling */
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            max-width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Ensure body takes full height of viewport */
+            box-sizing: border-box;
+        }
+        body {
+            font-size: 1.2em; /* Increase base font size */
+            line-height: 1.5;
+        }
+        input, button {
+            font-size: 1.2em; /* Increase font size for inputs and buttons */
+            padding: 10px; /* Increase padding for better touch target size */
+            margin: 10px 0; /* Increase margin for better spacing */
+            width: 100%; /* Make inputs take full width for easier interaction */
+            box-sizing: border-box; /* Ensure padding doesn't affect width calculation */
+        }
+        button {  
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button.stop-recording, button.stop-playing {
+            background-color: red;
+        }
+        div, select {
+            font-size: 1.2em;
+            width: 100%;
+            max-width: 400px; /* Restrict max width to ensure it's centered nicely */
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-sizing: border-box; /* Ensure padding doesn't affect width calculation */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #mainContent {
+            display: none; /* Hide main content initially */
+        }
+        @media (max-width: 600px) {
+            div, select {
+                padding: 10px; /* Adjust padding for smaller screens */
+                box-shadow: none; /* Remove box shadow for simpler design on mobile */
+                border: none; /* Remove border for simpler design on mobile */
+            }
+            input, button {
+                font-size: 1em; /* Slightly smaller font size for inputs and buttons */
+                padding: 8px; /* Slightly smaller padding */
+                margin: 5px 0; /* Adjust margin for better spacing */
+            }
+            body {
+                padding: 5px; /* Reduce padding on body for smaller screens */
+            }
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const storedLogin = localStorage.getItem('login');
+            const storedPassword = localStorage.getItem('password');
+            if (storedLogin && storedLogin != "") {
+                document.getElementById('login').value = storedLogin;
+            }
+            if (storedPassword && storedPassword != "") {
+                document.getElementById('password').value = storedPassword;
+            }
+        });
+
+        async function login() {
+            // TODO: login
+            const login = document.getElementById('login').value;
+            const password = document.getElementById('password').value;
+
+            localStorage.setItem('login', login);
+            localStorage.setItem('password', password);
+
+            // Simulated a successful login response
+            const data = { statusCode: 200, message: "Login successful" };
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+        }
+    </script>
+</head>
+<body>
+    <div id="loginForm" class="divBox">
+        <input type="text" id="login" placeholder="Логин">
+        <input type="password" id="password" placeholder="Пароль">
+        <button onclick="login()">Войти</button>
+    </div>
+    
+    <button id="doneButton" class="divBox" style="width: 100%;display:none;">Готово</button>
+    
+    <div id="mainContent" class="divBox" style="width: 100%;">
+        <select id="category">
+            <option value="rotation" selected>Ротировать</option>
+            <option value="education">Отправить на обучение</option>
+            <option value="loss">Отметить потерю</option>
+        </select>
+        <br>
+
+        <div id="lossFields" style="display: none;">
+            <input type="text" id="brigadeNumber" placeholder="№_бригады"><br>
+            <input type="text" id="brigadeName" placeholder="Наименование бригады"><br>
+            <input type="datetime-local" id="rotationDate" placeholder="Дата_ротации"><br>
+            <input type="number" id="lossHours" min="1" placeholder="Часы_потери"><br>
+
+            <button id="recordLossCommentButton">Записать комментарий потери</button>
+            <audio id="lossCommentAudioPlayback" controls style="width: 100%"></audio>
+            <button id="playLossCommentButton" disabled>Прослушать запись</button><br>
+        </div>
+
+        <div id="otherFields">
+            <input type="text" id="tableId" placeholder="По табельному номеру"><br>
+            <input type="text" id="nameId" placeholder="По Имени/Фамилии"><br>
+            <input type="text" id="sourceArea" placeholder="С участка"><br>
+            <input type="text" id="targetArea" placeholder="На участок"><br>
+            В диапазоне времени:<br>
+            <input type="datetime-local" id="startDatetime"><br>
+            <input type="datetime-local" id="endDatetime"><br>
+            <input type="number" id="positiveInteger" min="1" placeholder="На какое количество часов"><br>
+            <!-- <input type="text" id="reasonText" placeholder="Причина ротации/обучения"><br> -->
+
+            <button id="recordButton">Записать причину ротации/обучения</button>
+            <audio id="audioPlayback" controls style="width: 100%"></audio>
+            <button id="playButton" disabled>Прослушать запись</button>
+        </div>
+
+        <button id="safeButton">Сохранить</button>
+
+        <script>
+            // Media recorder and audio handling logic remains unchanged
+            let mediaRecorder;
+            let audioChunks = [];
+            let audioContext;
+
+
+            document.getElementById('recordLossCommentButton').addEventListener('click', async () => {
+    const recordButton = document.getElementById('recordLossCommentButton');
+    if (recordButton.textContent === 'Записать комментарий потери') {
+        try {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = async () => {
+                try {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    document.getElementById('lossCommentAudioPlayback').src = audioUrl; // Assign URL directly from the Blob
+                    document.getElementById('playLossCommentButton').disabled = false; // Enable play button after recording
+                    window.lossCommentWavData = audioBlob; // Store the Blob for further processing if needed
+                    audioChunks = [];
+                    audioContext.close();
+                } catch (error) {
+                    console.error('Ошибка при создании аудио:', error);
+                }
+            };
+
+            mediaRecorder.start();
+            recordButton.textContent = 'Остановить запись';
+            recordButton.classList.add('stop-recording');
+        } catch (error) {
+            console.error('Ошибка доступа к аудиоустройствам:', error);
+        }
+    } else if (recordButton.textContent === 'Остановить запись') {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+            recordButton.textContent = 'Записать комментарий потери';
+            recordButton.classList.remove('stop-recording');
+        }
+    }
+});
+
+document.getElementById('playLossCommentButton').addEventListener('click', () => {
+    const playButton = document.getElementById('playLossCommentButton');
+    const audioPlayback = document.getElementById('lossCommentAudioPlayback');
+    if (playButton.textContent === 'Прослушать запись') {
+        audioPlayback.play();
+        playButton.textContent = 'Остановить воспроизведение';
+        playButton.classList.add('stop-playing');
+    } else {
+        audioPlayback.pause();
+        audioPlayback.currentTime = 0;
+        playButton.textContent = 'Прослушать запись';
+        playButton.classList.remove('stop-playing');
+    }
+});
+
+
+document.getElementById('recordButton').addEventListener('click', async () => {
+    const recordButton = document.getElementById('recordButton');
+    if (recordButton.textContent === 'Записать причину ротации/обучения') {
+        try {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = async () => {
+                try {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    document.getElementById('audioPlayback').src = audioUrl; // Assign URL directly from the Blob
+                    document.getElementById('playButton').disabled = false; // Enable the play button after recording
+                    window.wavData = audioBlob;
+                    audioChunks = [];
+                    audioContext.close();
+                } catch (error) {
+                    console.error('Ошибка при создании аудио:', error);
+                }
+            };
+
+            mediaRecorder.start();
+            recordButton.textContent = 'Остановить запись';
+            recordButton.classList.add('stop-recording');
+        } catch (error) {
+            console.error('Ошибка доступа к аудиоустройствам:', error);
+        }
+    } else if (recordButton.textContent === 'Остановить запись') {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+            recordButton.textContent = 'Записать причину ротации/обучения';
+            recordButton.classList.remove('stop-recording');
+        }
+    }
+});
+
+async function encodeWAV(audioBuffer) {
+                const numOfChannels = audioBuffer.numberOfChannels;
+                const sampleRate = audioBuffer.sampleRate;
+                const bitsPerSample = 16;
+                const blockAlign = numOfChannels * bitsPerSample / 8;
+                const byteRate = sampleRate * blockAlign;
+                const dataLength = audioBuffer.length * blockAlign;
+                const bufferLength = 44 + dataLength;
+                const buffer = new ArrayBuffer(bufferLength);
+                const view = new DataView(buffer);
+
+                const writeString = (view, offset, string) => {
+                    for (let i = 0; i < string.length; i++) {
+                        view.setUint8(offset + i, string.charCodeAt(i));
+                    }
+                };
+
+                const floatTo16BitPCM = (output, offset, input) => {
+                    for (let i = 0; i < input.length; i++, offset += 2) {
+                        const s = Math.max(-1, Math.min(1, input[i]));
+                        output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+                    }
+                };
+
+                writeString(view, 0, 'RIFF');
+                view.setUint32(4, 36 + dataLength, true); // File size minus RIFF header
+                writeString(view, 8, 'WAVE');
+                writeString(view, 12, 'fmt ');
+                view.setUint32(16, 16, true); // Subchunk1Size (16 for PCM)
+                view.setUint16(20, 1, true);  // AudioFormat (1 for PCM)
+                view.setUint16(22, numOfChannels, true); // NumChannels
+                view.setUint32(24, sampleRate, true);    // SampleRate
+                view.setUint32(28, byteRate, true);      // ByteRate
+                view.setUint16(32, blockAlign, true);    // BlockAlign
+                view.setUint16(34, bitsPerSample, true); // BitsPerSample
+                writeString(view, 36, 'data');
+                view.setUint32(40, dataLength, true);    // Data chunk length
+
+                for (let channel = 0; channel < numOfChannels; channel++) {
+                    floatTo16BitPCM(view, 44 + channel * 2, audioBuffer.getChannelData(channel));
+                }
+
+                return buffer;
+            }
+
+
+            document.getElementById('playButton').addEventListener('click', () => {
+                const playButton = document.getElementById('playButton');
+                const audioPlayback = document.getElementById('audioPlayback');
+                if (playButton.textContent === 'Прослушать запись') {
+                    audioPlayback.play();
+                    playButton.textContent = 'Остановить воспроизведение';
+                    playButton.classList.add('stop-playing'); // Add red background
+                } else {
+                    audioPlayback.pause();
+                    audioPlayback.currentTime = 0;
+                    playButton.textContent = 'Прослушать запись';
+                    playButton.classList.remove('stop-playing'); // Remove red background
+                }
+            });
+
+            document.getElementById('category').addEventListener('change', (event) => {
+    const selectedCategory = event.target.value;
+
+    // Stop any ongoing recording
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+    }
+
+    // Clear all audio data and reset audio elements
+    window.wavData = null;
+    window.lossCommentWavData = null;
+    document.getElementById('audioPlayback').src = '';
+    document.getElementById('lossCommentAudioPlayback').src = '';
+    document.getElementById('playButton').disabled = true;
+    document.getElementById('playLossCommentButton').disabled = true;
+
+    // Reset button styles and texts to initial state (blue)
+    const recordLossCommentButton = document.getElementById('recordLossCommentButton');
+    recordLossCommentButton.textContent = 'Записать комментарий потери';
+    recordLossCommentButton.classList.remove('stop-recording');
+
+    const recordButton = document.getElementById('recordButton');
+    recordButton.textContent = 'Записать причину ротации/обучения';
+    recordButton.classList.remove('stop-recording');
+
+    const playLossCommentButton = document.getElementById('playLossCommentButton');
+    playLossCommentButton.textContent = 'Прослушать запись';
+    playLossCommentButton.classList.remove('stop-playing');
+
+    const playButton = document.getElementById('playButton');
+    playButton.textContent = 'Прослушать запись';
+    playButton.classList.remove('stop-playing');
+
+    if (selectedCategory === 'loss') {
+        document.getElementById('lossFields').style.display = 'block';
+        document.getElementById('otherFields').style.display = 'none';
+    } else {
+        document.getElementById('lossFields').style.display = 'none';
+        document.getElementById('otherFields').style.display = 'block';
+    }
+});
+
+
+            // document.getElementById('safeButton').addEventListener('click', () => {
+            //     const category = document.getElementById('category').value;
+
+            //     if (category === 'loss') {
+            //         const brigadeNumber = document.getElementById('brigadeNumber').value;
+            //         const brigadeName = document.getElementById('brigadeName').value;
+            //         const rotationDate = document.getElementById('rotationDate').value;
+            //         const lossHours = document.getElementById('lossHours').value;
+            //         // const lossComment = document.getElementById('lossComment').value;
+
+            //         if (brigadeNumber && brigadeName && rotationDate && lossHours && window.lossCommentWavData) {
+            //             alert('Данные сохранены для потери.');
+
+            //             // Reset fields and audio
+            //             document.getElementById('brigadeNumber').value = '';
+            //             document.getElementById('brigadeName').value = '';
+            //             document.getElementById('rotationDate').value = '';
+            //             document.getElementById('lossHours').value = '';
+            //             document.getElementById('lossCommentAudioPlayback').src = '';
+            //             document.getElementById('playLossCommentButton').disabled = true;
+
+            //             document.getElementById('mainContent').style.display = 'none';
+            //             document.getElementById('doneButton').style.display = 'block';
+            //             document.getElementById('doneButton').addEventListener('click', () => {
+            //                 location.reload();
+            //             });
+            //         } else {
+            //             alert('Заполните все поля и запишите комментарий.');
+            //         }
+            //     } else {
+            //         const tableId = document.getElementById('tableId').value;
+            //         const nameId = document.getElementById('nameId').value;
+            //         const sourceArea = document.getElementById('sourceArea').value;
+            //         const targetArea = document.getElementById('targetArea').value;
+            //         const startDatetime = document.getElementById('startDatetime').value;
+            //         const endDatetime = document.getElementById('endDatetime').value;
+            //         const positiveInteger = document.getElementById('positiveInteger').value;
+
+            //         if ((tableId || nameId) && sourceArea && targetArea && (positiveInteger || (startDatetime && endDatetime))) {
+            //             if (window.wavData) {
+            //                 const blob = new Blob([window.wavData], { type: 'audio/wav' });
+            //                 const now = new Date();
+            //                 const filename = `${now.getHours()}:${now.getMinutes()}_${now.getDate()}.${now.getMonth()+1}.${now.getFullYear()}_${now.getTime()}.wav`;
+
+            //                 const downloadLink = document.createElement('a');
+            //                 downloadLink.href = URL.createObjectURL(blob);
+            //                 downloadLink.download = filename;
+            //                 downloadLink.click();
+
+            //                 document.getElementById('mainContent').style.display = 'none';
+            //                 document.getElementById('doneButton').style.display = 'block';
+
+            //                 document.getElementById('doneButton').addEventListener('click', () => {
+            //                     document.getElementById('tableId').value = '';
+            //                     document.getElementById('nameId').value = '';
+            //                     document.getElementById('sourceArea').value = '';
+            //                     document.getElementById('targetArea').value = '';
+            //                     document.getElementById('startDatetime').value = '';
+            //                     document.getElementById('endDatetime').value = '';
+            //                     document.getElementById('positiveInteger').value = '';
+            //                     document.getElementById('audioPlayback').src = '';
+            //                     document.getElementById('playButton').disabled = true;
+
+            //                     location.reload();
+            //                 });
+            //             } else {
+            //                 alert('Пожалуйста, запишите аудио.');
+            //             }
+            //         } else {
+            //             alert('Заполните обязательные поля.');
+            //         }
+            //     }
+            // });
+        
+
+            document.getElementById('safeButton').addEventListener('click', async () => {
+    const category = document.getElementById('category').value;
+
+    if (category === 'loss') {
+        const brigadeNumber = document.getElementById('brigadeNumber').value;
+        const brigadeName = document.getElementById('brigadeName').value;
+        const rotationDate = document.getElementById('rotationDate').value;
+        const lossHours = document.getElementById('lossHours').value;
+
+        if (brigadeNumber && brigadeName && rotationDate && lossHours && window.lossCommentWavData) {
+            const headers = {
+                'Brigade-Number': brigadeNumber,
+                'Brigade-Name': brigadeName,
+                'Rotation-Date': rotationDate,
+                'Loss-Hours': lossHours
+            };
+            const blob = new Blob([window.lossCommentWavData], { type: 'audio/wav' });
+            await sendData(headers, blob, 'Данные сохранены для потери.');
+            resetLossFields();
+        } else {
+            alert('Заполните все поля и запишите комментарий.');
+        }
+    } else {
+        const tableId = document.getElementById('tableId').value;
+        const nameId = document.getElementById('nameId').value;
+        const sourceArea = document.getElementById('sourceArea').value;
+        const targetArea = document.getElementById('targetArea').value;
+        const startDatetime = document.getElementById('startDatetime').value;
+        const endDatetime = document.getElementById('endDatetime').value;
+        const positiveInteger = document.getElementById('positiveInteger').value;
+
+        if ((tableId || nameId) && sourceArea && targetArea && (positiveInteger || (startDatetime && endDatetime))) {
+            if (window.wavData) {
+                const headers = {
+                    ...(tableId && { 'Table-Id': tableId }),
+                    ...(nameId && { 'Name-Id': nameId }),
+                    'Source-Area': sourceArea,
+                    'Target-Area': targetArea,
+                    ...(startDatetime && { 'Start-Datetime': startDatetime }),
+                    ...(endDatetime && { 'End-Datetime': endDatetime }),
+                    ...(positiveInteger && { 'Positive-Integer': positiveInteger })
+                };
+                const blob = new Blob([window.wavData], { type: 'audio/wav' });
+                await sendData(headers, blob, 'Данные сохранены.');
+                resetOtherFields();
+            } else {
+                alert('Пожалуйста, запишите аудио.');
+            }
+        } else {
+            alert('Заполните обязательные поля.');
+        }
+    }
+});
+
+/**
+ * Function to send data to the API
+ * @param {Object} headers - The headers to send with the request
+ * @param {Blob} blob - The Blob object containing the audio data
+ * @param {string} successMessage - The message to display on success
+ */
+async function sendData(headers, blob, successMessage) {
+
+    // Print the data to the console before sending
+    console.log('Sending Data:');
+    console.log('Headers:', headers);
+    console.log('Blob Size:', blob.size, 'bytes');
+    console.log('Blob Type:', blob.type);
+
+    try {
+        const response = await fetch('https://79atyeuh20.execute-api.eu-north-1.amazonaws.com/upload_audio', {
+            method: 'POST',
+            headers: {
+                ...headers,
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Request-Method': 'POST',
+                'Content-Type': 'audio/wav',
+                'x-api-key': 'U8wxprinqK2xkybbtqSzw6oigUnH0NTt6NOMyLbr'
+            },
+            body: blob
+        });
+
+        if (response.ok) {
+            const responseText = await response.text();
+            alert(successMessage);
+            console.log('Response:', responseText);
+        } else {
+            console.error('Ошибка при отправке записи:', response.statusText);
+            incrementLossCounter(); // Increment loss counter if error occurs
+        }
+    } catch (error) {
+        console.error('Ошибка при отправке записи:', error);
+        incrementLossCounter(); // Increment loss counter if error occurs
+    } finally {
+        // Show the "Done" button independently of the success or failure of the request
+        document.getElementById('mainContent').style.display = 'none';
+        document.getElementById('doneButton').style.display = 'block';
+        document.getElementById('doneButton').addEventListener('click', () => {
+            location.reload();
+        });
+    }
+
+}
+
+/**
+ * Function to increment the "lost" counter in local storage
+ */
+ function incrementLossCounter() {
+    let lostCount = parseInt(localStorage.getItem('lost')) || 0; // Get current count or default to 0
+    lostCount++; // Increment the count
+    localStorage.setItem('lost', lostCount); // Store updated count back in local storage
+    console.log(`Current number of losses stored locally: ${lostCount}`); // Log the updated count
+}
+
+/**
+ * Resets fields for the 'loss' category
+ */
+function resetLossFields() {
+    document.getElementById('brigadeNumber').value = '';
+    document.getElementById('brigadeName').value = '';
+    document.getElementById('rotationDate').value = '';
+    document.getElementById('lossHours').value = '';
+    document.getElementById('lossCommentAudioPlayback').src = '';
+    document.getElementById('playLossCommentButton').disabled = true;
+}
+
+/**
+ * Resets fields for categories other than 'loss'
+ */
+function resetOtherFields() {
+    document.getElementById('tableId').value = '';
+    document.getElementById('nameId').value = '';
+    document.getElementById('sourceArea').value = '';
+    document.getElementById('targetArea').value = '';
+    document.getElementById('startDatetime').value = '';
+    document.getElementById('endDatetime').value = '';
+    document.getElementById('positiveInteger').value = '';
+    document.getElementById('audioPlayback').src = '';
+    document.getElementById('playButton').disabled = true;
+}
+
+        </script>
+    </div>
+</body>
+
+</html>
