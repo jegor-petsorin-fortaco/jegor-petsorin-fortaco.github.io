@@ -149,9 +149,14 @@
             let audioChunks = [];
             let audioContext;
 
+
+            // <button id="recordLossCommentButton">Записать комментарий потери</button>
+            // <audio id="lossCommentAudioPlayback" controls style="width: 100%"></audio>
+            // <button id="playLossCommentButton" disabled>Прослушать запись</button><br>
+
             document.getElementById('recordLossCommentButton').addEventListener('click', async () => {
-                const recordButton = document.getElementById('recordButton');
-                if (recordButton.textContent === 'Записать причину ротации/обучения') {
+                const recordButton = document.getElementById('recordLossCommentButton');
+                if (recordButton.textContent === 'Записать комментарий потери') {
                     try {
                         audioContext = new (window.AudioContext || window.webkitAudioContext)();
                         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -170,8 +175,8 @@
                             const wavData = await encodeWAV(audioBuffer);
 
                             const audioUrl = URL.createObjectURL(new Blob([wavData], { type: 'audio/wav' }));
-                            document.getElementById('audioPlayback').src = audioUrl;
-                            document.getElementById('playButton').disabled = false; // Enable the play button after recording
+                            document.getElementById('lossCommentAudioPlayback').src = audioUrl;
+                            document.getElementById('playLossCommentButton').disabled = false; // Enable the play button after recording
 
                             // Store the WAV data globally for sending later
                             window.wavData = wavData;
