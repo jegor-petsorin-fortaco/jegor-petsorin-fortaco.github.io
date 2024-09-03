@@ -195,7 +195,7 @@
                 } else if (recordButton.textContent === 'Остановить запись') {
                     if (mediaRecorder && mediaRecorder.state === 'recording') {
                         mediaRecorder.stop();
-                        recordButton.textContent = 'Записать причину ротации/обучения';
+                        recordButton.textContent = 'Записать комментарий потери';
                         recordButton.classList.remove('stop-recording'); // Remove red background
                     }
                 }
@@ -347,7 +347,7 @@ document.getElementById('recordButton').addEventListener('click', async () => {
 //     }
 // });
 
-async function encodeWAV(audioBuffer) {
+            async function encodeWAV(audioBuffer) {
                 const numOfChannels = audioBuffer.numberOfChannels;
                 const sampleRate = audioBuffer.sampleRate;
                 const bitsPerSample = 16;
