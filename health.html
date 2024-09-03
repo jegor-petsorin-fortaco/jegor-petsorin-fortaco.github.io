@@ -29,15 +29,17 @@
 </head>
 <body>
     <div class="container">
-        <p class="info-text" id="lostCounterText">Loading...</p>
+        <p class="info-text" id="statusText">Loading...</p>
     </div>
 
     <script>
-        // Retrieve the number of failed sends from local storage
-        const lostCount = localStorage.getItem('lost') || 0;
+    // Retrieve the number of failed sends and successes from local storage
+const lostCount = localStorage.getItem('lost') || 0;
+const successCount = localStorage.getItem('success') || 0;
 
-        // Display the count in the info text
-        document.getElementById('lostCounterText').textContent = `Lost ${lostCount} sends due to errors while sending data.`;
-    </script>
+// Display the counts in the info text
+document.getElementById('statusText').textContent = `Lost ${lostCount} sends and ${successCount} successful sends.`;
+
+</script>
 </body>
 </html>

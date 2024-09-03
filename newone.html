@@ -69,6 +69,35 @@
                 padding: 5px; /* Reduce padding on body for smaller screens */
             }
         }
+
+        /* Circle Bar Styles */
+#circleBar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure it appears on top of other content */
+}
+
+.spinner {
+    border: 16px solid #f3f3f3; /* Light grey */
+    border-top: 16px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -142,6 +171,13 @@
         </div>
 
         <button id="safeButton">Сохранить</button>
+
+
+        <!-- Circle Bar (Loading Indicator) -->
+<div id="circleBar" style="display: none;">
+    <div class="spinner"></div>
+</div>
+
 
         <script>
             // Media recorder and audio handling logic remains unchanged
@@ -587,6 +623,10 @@ document.getElementById('recordButton').addEventListener('click', async () => {
  */
 async function sendData(headers, blob, successMessage) {
 
+    headers['timestamp'] = new Date().toISOString();
+    document.getElementById('circleBar').style.display = 'block';
+
+
     // Print the data to the console before sending
     console.log('Sending Data:');
     console.log('Headers:', headers);
@@ -607,6 +647,7 @@ async function sendData(headers, blob, successMessage) {
         if (response.ok) {
             const responseText = await response.text();
             alert(successMessage);
+            incrementSuccessCounter();
             console.log('Response:', responseText);
         } else {
             console.error('Ошибка при отправке записи:', response.statusText);
@@ -623,8 +664,17 @@ async function sendData(headers, blob, successMessage) {
             location.reload();
         });
     }
+    document.getElementById('circleBar').style.display = 'none';
 
 }
+
+function incrementSuccessCounter() {
+    let successCount = parseInt(localStorage.getItem('success')) || 0; // Get current count or default to 0
+    successCount++; // Increment the count
+    localStorage.setItem('success', successCount); // Store updated count back in local storage
+    console.log(`Current number of successes stored locally: ${successCount}`); // Log the updated count
+}
+
 
 /**
  * Function to increment the "lost" counter in local storage
