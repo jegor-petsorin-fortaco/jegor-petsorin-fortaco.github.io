@@ -541,7 +541,7 @@ document.getElementById('recordButton').addEventListener('click', async () => {
                 'Rotation-Date': rotationDate,
                 'Loss-Hours': lossHours
             };
-            const blob = new Blob([window.lossCommentWavData], { type: 'audio/wav' });
+            const blob = new Blob([window.wavData], { type: 'audio/wav' });
             await sendData(headers, blob, 'Данные сохранены для потери.');
             resetLossFields();
         } else {
