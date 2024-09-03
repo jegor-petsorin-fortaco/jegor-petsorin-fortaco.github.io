@@ -534,7 +534,7 @@ document.getElementById('recordButton').addEventListener('click', async () => {
         const rotationDate = document.getElementById('rotationDate').value;
         const lossHours = document.getElementById('lossHours').value;
 
-        if (brigadeNumber && brigadeName && rotationDate && lossHours && window.lossCommentWavData) {
+        if (brigadeNumber && brigadeName && rotationDate && lossHours && window.wavData) {
             const headers = {
                 'Brigade-Number': brigadeNumber,
                 'Brigade-Name': brigadeName,
