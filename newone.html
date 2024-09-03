@@ -149,47 +149,93 @@
             let audioChunks = [];
             let audioContext;
 
-
             document.getElementById('recordLossCommentButton').addEventListener('click', async () => {
-    const recordButton = document.getElementById('recordLossCommentButton');
-    if (recordButton.textContent === 'Записать комментарий потери') {
-        try {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
+                const recordButton = document.getElementById('recordButton');
+                if (recordButton.textContent === 'Записать причину ротации/обучения') {
+                    try {
+                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        const mediaStreamSource = audioContext.createMediaStreamSource(stream);
+                        mediaRecorder = new MediaRecorder(stream);
 
-            mediaRecorder.ondataavailable = event => {
-                audioChunks.push(event.data);
-            };
+                        mediaRecorder.ondataavailable = event => {
+                            audioChunks.push(event.data);
+                        };
 
-            mediaRecorder.onstop = async () => {
-                try {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    document.getElementById('lossCommentAudioPlayback').src = audioUrl; // Assign URL directly from the Blob
-                    document.getElementById('playLossCommentButton').disabled = false; // Enable play button after recording
-                    window.lossCommentWavData = audioBlob; // Store the Blob for further processing if needed
-                    audioChunks = [];
-                    audioContext.close();
-                } catch (error) {
-                    console.error('Ошибка при создании аудио:', error);
+                        mediaRecorder.onstop = async () => {
+                            // const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                            const arrayBuffer = await audioBlob.arrayBuffer();
+                            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                            const wavData = await encodeWAV(audioBuffer);
+
+                            const audioUrl = URL.createObjectURL(new Blob([wavData], { type: 'audio/wav' }));
+                            document.getElementById('audioPlayback').src = audioUrl;
+                            document.getElementById('playButton').disabled = false; // Enable the play button after recording
+
+                            // Store the WAV data globally for sending later
+                            window.wavData = wavData;
+
+
+                            audioChunks = [];
+                            audioContext.close();
+                        };
+
+                        mediaRecorder.start();
+                        recordButton.textContent = 'Остановить запись';
+                        recordButton.classList.add('stop-recording'); // Add red background
+                    } catch (error) {
+                        console.error('Ошибка доступа к аудиоустройствам:', error);
+                    }
+                } else if (recordButton.textContent === 'Остановить запись') {
+                    if (mediaRecorder && mediaRecorder.state === 'recording') {
+                        mediaRecorder.stop();
+                        recordButton.textContent = 'Записать причину ротации/обучения';
+                        recordButton.classList.remove('stop-recording'); // Remove red background
+                    }
                 }
-            };
+            });
 
-            mediaRecorder.start();
-            recordButton.textContent = 'Остановить запись';
-            recordButton.classList.add('stop-recording');
-        } catch (error) {
-            console.error('Ошибка доступа к аудиоустройствам:', error);
-        }
-    } else if (recordButton.textContent === 'Остановить запись') {
-        if (mediaRecorder && mediaRecorder.state === 'recording') {
-            mediaRecorder.stop();
-            recordButton.textContent = 'Записать комментарий потери';
-            recordButton.classList.remove('stop-recording');
-        }
-    }
-});
+//             document.getElementById('recordLossCommentButton').addEventListener('click', async () => {
+//     const recordButton = document.getElementById('recordLossCommentButton');
+//     if (recordButton.textContent === 'Записать комментарий потери') {
+//         try {
+//             audioContext = new (window.AudioContext || window.webkitAudioContext)();
+//             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+//             mediaRecorder = new MediaRecorder(stream);
+
+//             mediaRecorder.ondataavailable = event => {
+//                 audioChunks.push(event.data);
+//             };
+
+//             mediaRecorder.onstop = async () => {
+//                 try {
+//                     const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+//                     const audioUrl = URL.createObjectURL(audioBlob);
+//                     document.getElementById('lossCommentAudioPlayback').src = audioUrl; // Assign URL directly from the Blob
+//                     document.getElementById('playLossCommentButton').disabled = false; // Enable play button after recording
+//                     window.lossCommentWavData = audioBlob; // Store the Blob for further processing if needed
+//                     audioChunks = [];
+//                     audioContext.close();
+//                 } catch (error) {
+//                     console.error('Ошибка при создании аудио:', error);
+//                 }
+//             };
+
+//             mediaRecorder.start();
+//             recordButton.textContent = 'Остановить запись';
+//             recordButton.classList.add('stop-recording');
+//         } catch (error) {
+//             console.error('Ошибка доступа к аудиоустройствам:', error);
+//         }
+//     } else if (recordButton.textContent === 'Остановить запись') {
+//         if (mediaRecorder && mediaRecorder.state === 'recording') {
+//             mediaRecorder.stop();
+//             recordButton.textContent = 'Записать комментарий потери';
+//             recordButton.classList.remove('stop-recording');
+//         }
+//     }
+// });
 
 document.getElementById('playLossCommentButton').addEventListener('click', () => {
     const playButton = document.getElementById('playLossCommentButton');
@@ -208,45 +254,93 @@ document.getElementById('playLossCommentButton').addEventListener('click', () =>
 
 
 document.getElementById('recordButton').addEventListener('click', async () => {
-    const recordButton = document.getElementById('recordButton');
-    if (recordButton.textContent === 'Записать причину ротации/обучения') {
-        try {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
+                const recordButton = document.getElementById('recordButton');
+                if (recordButton.textContent === 'Записать причину ротации/обучения') {
+                    try {
+                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        const mediaStreamSource = audioContext.createMediaStreamSource(stream);
+                        mediaRecorder = new MediaRecorder(stream);
 
-            mediaRecorder.ondataavailable = event => {
-                audioChunks.push(event.data);
-            };
+                        mediaRecorder.ondataavailable = event => {
+                            audioChunks.push(event.data);
+                        };
 
-            mediaRecorder.onstop = async () => {
-                try {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    document.getElementById('audioPlayback').src = audioUrl; // Assign URL directly from the Blob
-                    document.getElementById('playButton').disabled = false; // Enable the play button after recording
-                    window.wavData = audioBlob;
-                    audioChunks = [];
-                    audioContext.close();
-                } catch (error) {
-                    console.error('Ошибка при создании аудио:', error);
+                        mediaRecorder.onstop = async () => {
+                            // const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                            const arrayBuffer = await audioBlob.arrayBuffer();
+                            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                            const wavData = await encodeWAV(audioBuffer);
+
+                            const audioUrl = URL.createObjectURL(new Blob([wavData], { type: 'audio/wav' }));
+                            document.getElementById('audioPlayback').src = audioUrl;
+                            document.getElementById('playButton').disabled = false; // Enable the play button after recording
+
+                            // Store the WAV data globally for sending later
+                            window.wavData = wavData;
+
+
+                            audioChunks = [];
+                            audioContext.close();
+                        };
+
+                        mediaRecorder.start();
+                        recordButton.textContent = 'Остановить запись';
+                        recordButton.classList.add('stop-recording'); // Add red background
+                    } catch (error) {
+                        console.error('Ошибка доступа к аудиоустройствам:', error);
+                    }
+                } else if (recordButton.textContent === 'Остановить запись') {
+                    if (mediaRecorder && mediaRecorder.state === 'recording') {
+                        mediaRecorder.stop();
+                        recordButton.textContent = 'Записать причину ротации/обучения';
+                        recordButton.classList.remove('stop-recording'); // Remove red background
+                    }
                 }
-            };
+            });
 
-            mediaRecorder.start();
-            recordButton.textContent = 'Остановить запись';
-            recordButton.classList.add('stop-recording');
-        } catch (error) {
-            console.error('Ошибка доступа к аудиоустройствам:', error);
-        }
-    } else if (recordButton.textContent === 'Остановить запись') {
-        if (mediaRecorder && mediaRecorder.state === 'recording') {
-            mediaRecorder.stop();
-            recordButton.textContent = 'Записать причину ротации/обучения';
-            recordButton.classList.remove('stop-recording');
-        }
-    }
-});
+
+// document.getElementById('recordButton').addEventListener('click', async () => {
+//     const recordButton = document.getElementById('recordButton');
+//     if (recordButton.textContent === 'Записать причину ротации/обучения') {
+//         try {
+//             audioContext = new (window.AudioContext || window.webkitAudioContext)();
+//             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+//             mediaRecorder = new MediaRecorder(stream);
+
+//             mediaRecorder.ondataavailable = event => {
+//                 audioChunks.push(event.data);
+//             };
+
+//             mediaRecorder.onstop = async () => {
+//                 try {
+//                     const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+//                     const audioUrl = URL.createObjectURL(audioBlob);
+//                     document.getElementById('audioPlayback').src = audioUrl; // Assign URL directly from the Blob
+//                     document.getElementById('playButton').disabled = false; // Enable the play button after recording
+//                     window.wavData = audioBlob;
+//                     audioChunks = [];
+//                     audioContext.close();
+//                 } catch (error) {
+//                     console.error('Ошибка при создании аудио:', error);
+//                 }
+//             };
+
+//             mediaRecorder.start();
+//             recordButton.textContent = 'Остановить запись';
+//             recordButton.classList.add('stop-recording');
+//         } catch (error) {
+//             console.error('Ошибка доступа к аудиоустройствам:', error);
+//         }
+//     } else if (recordButton.textContent === 'Остановить запись') {
+//         if (mediaRecorder && mediaRecorder.state === 'recording') {
+//             mediaRecorder.stop();
+//             recordButton.textContent = 'Записать причину ротации/обучения';
+//             recordButton.classList.remove('stop-recording');
+//         }
+//     }
+// });
 
 async function encodeWAV(audioBuffer) {
                 const numOfChannels = audioBuffer.numberOfChannels;
@@ -276,7 +370,7 @@ async function encodeWAV(audioBuffer) {
                 view.setUint32(4, 36 + dataLength, true); // File size minus RIFF header
                 writeString(view, 8, 'WAVE');
                 writeString(view, 12, 'fmt ');
-                view.setUint32(16, 16, true); // Subchunk1Size (16 for PCM)
+                view.setUint32(16, 16, true); // Sub chunk 1Size (16 for PCM)
                 view.setUint16(20, 1, true);  // AudioFormat (1 for PCM)
                 view.setUint16(22, numOfChannels, true); // NumChannels
                 view.setUint32(24, sampleRate, true);    // SampleRate
@@ -292,7 +386,6 @@ async function encodeWAV(audioBuffer) {
 
                 return buffer;
             }
-
 
             document.getElementById('playButton').addEventListener('click', () => {
                 const playButton = document.getElementById('playButton');
@@ -363,7 +456,7 @@ async function encodeWAV(audioBuffer) {
             //         // const lossComment = document.getElementById('lossComment').value;
 
             //         if (brigadeNumber && brigadeName && rotationDate && lossHours && window.lossCommentWavData) {
-            //             alert('Данные сохранены для потери.');
+            //             alert(' для потери.');
 
             //             // Reset fields and audio
             //             document.getElementById('brigadeNumber').value = '';
@@ -379,7 +472,7 @@ async function encodeWAV(audioBuffer) {
             //                 location.reload();
             //             });
             //         } else {
-            //             alert('Заполните все поля и запишите комментарий.');
+            //             alert('.');
             //         }
             //     } else {
             //         const tableId = document.getElementById('tableId').value;
@@ -418,10 +511,10 @@ async function encodeWAV(audioBuffer) {
             //                     location.reload();
             //                 });
             //             } else {
-            //                 alert('Пожалуйста, запишите аудио.');
+            //                 alert(',  .');
             //             }
             //         } else {
-            //             alert('Заполните обязательные поля.');
+            //             alert('  .');
             //         }
             //     }
             // });
@@ -500,8 +593,6 @@ async function sendData(headers, blob, successMessage) {
             method: 'POST',
             headers: {
                 ...headers,
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Request-Method': 'POST',
                 'Content-Type': 'audio/wav',
                 'x-api-key': 'U8wxprinqK2xkybbtqSzw6oigUnH0NTt6NOMyLbr'
             },
