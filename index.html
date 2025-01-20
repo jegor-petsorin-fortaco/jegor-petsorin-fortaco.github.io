@@ -53,40 +53,77 @@
                 };
 
                 mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    const arrayBuffer = await audioBlob.arrayBuffer();
-                    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-                    const wavData = await encodeWAV(audioBuffer);
+    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+    const arrayBuffer = await audioBlob.arrayBuffer();
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    const wavData = await encodeWAV(audioBuffer);
 
-                    const audioUrl = URL.createObjectURL(new Blob([wavData], { type: 'audio/wav' }));
-                    document.getElementById('audioPlayback').src = audioUrl;
-                    document.getElementById('downloadButton').disabled = false;
+    const audioUrl = URL.createObjectURL(new Blob([wavData], { type: 'audio/wav' }));
+    document.getElementById('audioPlayback').src = audioUrl;
+    document.getElementById('downloadButton').disabled = false;
 
-                    document.getElementById('downloadButton').addEventListener('click', () => {
-                        const link = document.createElement('a');
-                        link.href = audioUrl;
+    document.getElementById('downloadButton').addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.href = audioUrl;
 
-                        const now = new Date();
-                        // Format the local date and time in Tallinn (UTC+3)
-                        const date = now.toLocaleDateString('en-GB', { timeZone: 'Europe/Tallinn' }).replace(/\//g, '-') // Local date in YYYY-MM-DD format
-                        const time = now.toLocaleTimeString('en-GB', { 
-                        timeZone: 'Europe/Tallinn', 
-                        hour: '2-digit', 
-                        minute: '2-digit',
-                        second: '2-digit' // Add seconds to the time format
-                        }).replace(/:/g, '-'); // Local time in HH-MM format
+        const now = new Date();
+        const date = now.toLocaleDateString('en-GB', { timeZone: 'Europe/Tallinn' }).replace(/\//g, '-');
+        const time = now.toLocaleTimeString('en-GB', { 
+            timeZone: 'Europe/Tallinn', 
+            hour: '2-digit', 
+            minute: '2-digit',
+            second: '2-digit'
+        }).replace(/:/g, '-');
 
-                        link.download = `LOG_${date}_${time}.wav`;
+        link.download = `LOG_${date}_${time}.wav`;
 
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
 
-                        // document.getElementById('downloadButton').disabled = true;
-                    });
+    // Stop the microphone stream after recording
+    stream.getTracks().forEach(track => track.stop()); // Stop the tracks to release the microphone
 
-                    audioChunks = [];
-                };
+    audioChunks = [];
+};
+
+
+                // mediaRecorder.onstop = async () => {
+                //     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                //     const arrayBuffer = await audioBlob.arrayBuffer();
+                //     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                //     const wavData = await encodeWAV(audioBuffer);
+
+                //     const audioUrl = URL.createObjectURL(new Blob([wavData], { type: 'audio/wav' }));
+                //     document.getElementById('audioPlayback').src = audioUrl;
+                //     document.getElementById('downloadButton').disabled = false;
+
+                //     document.getElementById('downloadButton').addEventListener('click', () => {
+                //         const link = document.createElement('a');
+                //         link.href = audioUrl;
+
+                //         const now = new Date();
+                //         // Format the local date and time in Tallinn (UTC+3)
+                //         const date = now.toLocaleDateString('en-GB', { timeZone: 'Europe/Tallinn' }).replace(/\//g, '-') // Local date in YYYY-MM-DD format
+                //         const time = now.toLocaleTimeString('en-GB', { 
+                //         timeZone: 'Europe/Tallinn', 
+                //         hour: '2-digit', 
+                //         minute: '2-digit',
+                //         second: '2-digit' // Add seconds to the time format
+                //         }).replace(/:/g, '-'); // Local time in HH-MM format
+
+                //         link.download = `LOG_${date}_${time}.wav`;
+
+                //         document.body.appendChild(link);
+                //         link.click();
+                //         document.body.removeChild(link);
+
+                //         // document.getElementById('downloadButton').disabled = true;
+                //     });
+
+                //     audioChunks = [];
+                // };
 
                 mediaRecorder.start();
                 document.getElementById('startButton').disabled = true;
