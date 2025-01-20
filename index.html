@@ -68,11 +68,12 @@
 
                         const now = new Date();
                         // Format the local date and time in Tallinn (UTC+3)
-                        const date = now.toLocaleDateString('en-GB', { timeZone: 'Europe/Tallinn' }); // Local date in YYYY-MM-DD format
+                        const date = now.toLocaleDateString('en-GB', { timeZone: 'Europe/Tallinn' }).replace(/\//g, '-') // Local date in YYYY-MM-DD format
                         const time = now.toLocaleTimeString('en-GB', { 
                         timeZone: 'Europe/Tallinn', 
                         hour: '2-digit', 
-                        minute: '2-digit' 
+                        minute: '2-digit',
+                        second: '2-digit' // Add seconds to the time format
                         }).replace(/:/g, '-'); // Local time in HH-MM format
 
                         link.download = `LOG_${date}_${time}.wav`;
@@ -80,6 +81,8 @@
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
+
+                        document.getElementById('downloadButton').disabled = true;
                     });
 
                     audioChunks = [];
