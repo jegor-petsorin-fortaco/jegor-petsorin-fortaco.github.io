@@ -65,7 +65,18 @@
                     document.getElementById('downloadButton').addEventListener('click', () => {
                         const link = document.createElement('a');
                         link.href = audioUrl;
-                        link.download = 'recording.wav';
+
+                        const now = new Date();
+                        // Format the local date and time in Tallinn (UTC+3)
+                        const date = now.toLocaleDateString('en-GB', { timeZone: 'Europe/Tallinn' }); // Local date in YYYY-MM-DD format
+                        const time = now.toLocaleTimeString('en-GB', { 
+                        timeZone: 'Europe/Tallinn', 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                        }).replace(/:/g, '-'); // Local time in HH-MM format
+
+                        link.download = `LOG_${date}_${time}.wav`;
+
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
