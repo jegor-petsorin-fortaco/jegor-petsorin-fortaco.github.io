@@ -5,13 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simple Audio Recorder with Download</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wav-encoder/1.0.3/wav-encoder.min.js"></script>
+    <style>
+        /* Center the container */
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centers the content horizontally */
+            justify-content: center; /* Centers the content vertically */
+            height: 100vh; /* Full screen height */
+        }
+
+        /* Style the inner elements to be 80% of the screen width */
+        .container button, .container audio {
+            width: 80%; /* Set the width to 80% of the screen */
+            margin-bottom: 20px; /* Add some spacing between elements */
+            padding: 10px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        #audioPlayback {
+            height: 50px; /* Optional, to adjust the height of the audio player */
+        }
+    </style>
 </head>
 <body>
-    <button id="startButton">Start Recording</button>
-    <button id="stopButton" disabled>Stop Recording</button>
-    <audio id="audioPlayback" controls></audio>
-    <button id="downloadButton" disabled>Download Recording</button>
-
+    <div class="container">
+        <button id="startButton">Start Recording</button>
+        <button id="stopButton" disabled>Stop Recording</button>
+        <audio id="audioPlayback" controls></audio>
+        <button id="downloadButton" disabled>Download Recording</button>
+    </div>
     <script>
         let audioContext;
         let mediaRecorder;
